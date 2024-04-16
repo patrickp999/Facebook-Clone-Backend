@@ -1,3 +1,5 @@
+const { sendVerificationEmail } = require("../helpers/mailer");
+const { generateToken } = require("../helpers/tokens");
 const {
   validateEmail,
   validateLength,
@@ -61,7 +63,27 @@ exports.register = async (req, res) => {
       bDay,
       gender,
     }).save();
-    res.json(user);
+    const emailVerificationToken = generateToken(
+      { id: user._id.toString() },
+      "30m"
+    );
+    const url = `${process.env.BASE_URL}/activate/${emailVerificationToken}`;
+    sendVerificationEmail(user.email, user.firstName, url);
+    const token = generateToken({ id: user._id.toString() }, "7d");
+    res.json({
+      token,
+      id: user._id,
+      userName: user.userName,
+      picture: user.picture,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      bYear: user.bYear,
+      bMonth: user.bMonth,
+      bDay: user,
+      verified: user.verified,
+      message: "Registered successfully! Please verify your email",
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
