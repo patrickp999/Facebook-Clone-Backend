@@ -88,3 +88,9 @@ exports.register = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+exports.activateAccount = (req, res) => {
+  const { token } = req.body;
+  const user = jwt.verify(token, process.env.TOKEN_SECRET);
+  console.log(user);
+};
